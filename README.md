@@ -2,6 +2,8 @@
 
 [![smithery badge](https://smithery.ai/badge/@kongyo2/google-search-mcp)](https://smithery.ai/server/@kongyo2/google-search-mcp)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/Google-Search-MCP)
+
 > **⚠️ EXPERIMENTAL PROJECT - USE AT YOUR OWN RISK**
 > 
 > This is an experimental Google search MCP server that uses web scraping techniques. Please be aware of the following:
