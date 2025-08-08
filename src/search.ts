@@ -17,8 +17,8 @@ export interface SearchOptions {
   limit?: number;
   language?: string;
   region?: string;
-  safeSearch?: "off" | "moderate" | "strict";
-  timeRange?: "hour" | "day" | "week" | "month" | "year";
+  safeSearch?: "moderate" | "off" | "strict";
+  timeRange?: "day" | "hour" | "month" | "week" | "year";
 }
 
 // Enhanced DNS resolver with multiple DNS servers
@@ -60,7 +60,8 @@ class DNSResolver {
   ];
 
   static async findWorkingDNS(hostname: string = "google.com"): Promise<void> {
-    const maxAttempts = this.DNS_SERVERS.length;
+    // Try each DNS server twice for better reliability
+    const maxAttempts = this.DNS_SERVERS.length * 2;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const success = await this.testDNSResolution(hostname);
@@ -70,11 +71,12 @@ class DNSResolver {
 
       if (attempt < maxAttempts - 1) {
         this.rotateDNS();
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s between attempts
+        // Shorter wait time for more attempts
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between attempts
       }
     }
 
-    console.warn("All DNS servers failed, using system default");
+    console.warn("All DNS servers failed after extensive testing, using system default");
   }
 
   static getCurrentDNS() {
@@ -502,7 +504,7 @@ export async function performSearch(
         console.log(`Rotated user agent for retry ${retryCount}: ${newUserAgent.substring(0, 50)}...`);
       }
     },
-    retries: 5,
+    retries: 8,
     retryCondition: (error) => {
       // Network errors - always retry
       if (axiosRetry.isNetworkError(error)) {
@@ -603,7 +605,7 @@ export async function performSearch(
   await RequestAnonymizer.addRandomDelay();
 
   // Multiple attempt strategy with different approaches
-  const maxAttempts = 3;
+  const maxAttempts = 5;
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -692,8 +694,8 @@ export async function performSearch(
         break;
       }
 
-      // Wait before next attempt
-      const waitTime = Math.min(2000 * attempt, 8000);
+      // Wait before next attempt with shorter delays for more aggressive retries
+      const waitTime = Math.min(1000 * attempt, 5000);
       console.log(`Waiting ${waitTime}ms before next attempt...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
 
