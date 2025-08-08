@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import randomUseragent from "random-useragent";
 
 export interface SearchResult {
   description: string;
@@ -11,10 +12,10 @@ export async function performSearch(
   query: string,
   limit: number,
 ): Promise<SearchResult[]> {
+  const userAgent = randomUseragent.getRandom();
   const response = await axios.get("https://www.google.com/search", {
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+      "User-Agent": userAgent,
     },
     params: { q: query },
   });

@@ -27,6 +27,7 @@
     "axios": "^1.7.9",
     "cheerio": "^1.0.0-rc.12",
     "fastmcp": "^1.27.3",
+    "random-useragent": "^0.5.0",
     "zod": "^3.24.4"
   },
   "release": {
