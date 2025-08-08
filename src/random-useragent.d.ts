@@ -1,6 +1,4 @@
-declare module 'random-useragent' {
-  const randomUseragent: {
-    getRandom: () => string;
-  };
-  export default randomUseragent;
+declare module "random-useragent" {
+  export function getRandom(): string;
+  export function getRandom(filter?: (ua: string) => boolean): string;
 }

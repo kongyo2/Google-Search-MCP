@@ -1,74 +1,195 @@
-# FastMCP Boilerplate
+# Enhanced Google Search MCP Server
 
-A boilerplate for [FastMCP](https://github.com/punkpeye/fastmcp).
+A powerful Model Context Protocol (MCP) server that provides enhanced Google search capabilities with advanced anonymization and anti-detection features.
 
-This boilerplate is a good starting point for building an MCP server. It includes a basic setup for testing, linting, formatting, and publishing to NPM.
+## Features
 
-## Development
+### 🔍 Enhanced Search Capabilities
+- **Advanced Query Support**: Handle complex search queries with quotes, operators, and filters
+- **Configurable Results**: Limit results (1-10), set language, region, safe search, and time range
+- **Multiple Parsing Strategies**: Robust result extraction with fallback mechanisms
 
-To get started, clone the repository and install the dependencies.
+### 🛡️ Advanced Anonymization
+- **Realistic Browser Fingerprinting**: Rotating user agents that mimic real browsers (Chrome, Firefox, Safari, Edge)
+- **Dynamic Headers**: Randomized Accept-Language, Accept-Encoding, and security headers
+- **Session Randomization**: Unique session IDs and request fingerprints
+- **Request Timing**: Random delays to avoid detection patterns
+
+### 🚀 Reliability Features
+- **Smart Retry Logic**: Exponential backoff with jitter for failed requests
+- **Rate Limit Handling**: Automatic detection and graceful handling of rate limits
+- **Error Recovery**: Comprehensive error handling with user-friendly messages
+- **Timeout Management**: Configurable timeouts with proper error reporting
+
+### 🔧 Technical Improvements
+- **Multiple Result Selectors**: Adapts to Google's changing HTML structure
+- **URL Cleaning**: Proper handling of Google's redirect URLs
+- **Content Validation**: Ensures all results have valid URLs and content
+- **Comprehensive Logging**: Detailed logging for debugging and monitoring
+
+## Installation
 
 ```bash
-git clone https://github.com/punkpeye/fastmcp-boilerplate.git
-cd fastmcp-boilerplate
 npm install
+```
+
+## Usage
+
+### Development Mode
+
+Start the server in development mode with interactive CLI:
+
+```bash
 npm run dev
 ```
 
-> [!NOTE]
-> If you are starting a new project, you may want to fork [fastmcp-boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) and start from there.
+### Production Mode
 
-### Start the server
-
-If you simply want to start the server, you can use the `start` script.
+Start the server for production use:
 
 ```bash
 npm run start
 ```
 
-However, you can also interact with the server using the `dev` script.
-
-```bash
-npm run dev
-```
-
-This will start the server and allow you to interact with it using CLI.
-
 ### Testing
 
-A good MCP server should have tests. However, you don't need to test the MCP server itself, but rather the tools you implement.
+Run the comprehensive test suite:
 
 ```bash
 npm run test
 ```
 
-In the case of this boilerplate, we only test the implementation of the `add` tool.
-
-### Linting
-
-Having a good linting setup reduces the friction for other developers to contribute to your project.
+For continuous testing during development:
 
 ```bash
-npm run lint
+npm run test:watch
 ```
 
-This boilerplate uses [Prettier](https://prettier.io/), [ESLint](https://eslint.org/) and [TypeScript ESLint](https://typescript-eslint.io/) to lint the code.
+## MCP Tool: `search`
 
-### Formatting
+The server provides a single, powerful search tool with the following parameters:
 
-Use `npm run format` to format the code.
+### Parameters
 
-```bash
-npm run format
+- **`query`** (required): Search query to execute
+- **`limit`** (optional): Maximum number of results (1-10, default: 5)
+- **`language`** (optional): Language code (e.g., 'en', 'es', 'fr', 'de', 'ja')
+- **`region`** (optional): Region code (e.g., 'us', 'uk', 'ca', 'au')
+- **`safeSearch`** (optional): Filter level ('off', 'moderate', 'strict')
+- **`timeRange`** (optional): Time filter ('hour', 'day', 'week', 'month', 'year')
+
+### Example Usage
+
+```json
+{
+  "name": "search",
+  "arguments": {
+    "query": "Model Context Protocol MCP",
+    "limit": 5,
+    "language": "en",
+    "region": "us",
+    "safeSearch": "moderate",
+    "timeRange": "week"
+  }
+}
 ```
 
-### GitHub Actions
+## Configuration with Claude Desktop
 
-This repository has a GitHub Actions workflow that runs linting, formatting, tests, and publishes package updates to NPM using [semantic-release](https://semantic-release.gitbook.io/semantic-release/).
+Add this configuration to your Claude Desktop MCP settings:
 
-In order to use this workflow, you need to:
+```json
+{
+  "mcpServers": {
+    "enhanced-google-search": {
+      "command": "npx",
+      "args": ["tsx", "/path/to/your/project/src/server.ts"]
+    }
+  }
+}
+```
 
-1. Add `NPM_TOKEN` to the repository secrets
-   1. [Create a new automation token](https://www.npmjs.com/settings/punkpeye/tokens/new)
-   2. Add token as `NPM_TOKEN` environment secret (Settings → Secrets and Variables → Actions → "Manage environment secrets" → "release" → Add environment secret)
-1. Grant write access to the workflow (Settings → Actions → General → Workflow permissions → "Read and write permissions")
+## Architecture
+
+### Core Components
+
+1. **UserAgentGenerator**: Creates realistic browser fingerprints
+2. **RequestAnonymizer**: Handles request anonymization and timing
+3. **SearchParameterBuilder**: Constructs optimized search parameters
+4. **ResultParser**: Robust HTML parsing with multiple strategies
+
+### Anti-Detection Features
+
+- **Browser Fingerprint Rotation**: Cycles through realistic user agents
+- **Header Randomization**: Varies request headers to avoid patterns
+- **Timing Randomization**: Adds random delays between requests
+- **Session Management**: Generates unique session identifiers
+- **Parameter Variation**: Adds random search parameters
+
+### Error Handling
+
+The server provides comprehensive error handling for:
+- Rate limiting by Google
+- Network timeouts and connectivity issues
+- Access denied/blocked requests
+- Invalid or empty responses
+- Parsing failures with fallback strategies
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── server.ts          # Main MCP server implementation
+├── search.ts          # Enhanced search functionality
+├── search.test.ts     # Comprehensive test suite
+└── types.ts           # TypeScript type definitions
+```
+
+### Code Quality
+
+The project includes:
+- **TypeScript**: Full type safety and IntelliSense support
+- **ESLint**: Code linting with TypeScript rules
+- **Prettier**: Consistent code formatting
+- **Vitest**: Fast and reliable testing framework
+
+### Scripts
+
+- `npm run build`: Compile TypeScript to JavaScript
+- `npm run start`: Start the server in production mode
+- `npm run dev`: Start in development mode with CLI
+- `npm run test`: Run the test suite
+- `npm run test:watch`: Run tests in watch mode
+- `npm run lint`: Check code quality and types
+- `npm run format`: Format code with Prettier
+
+## Testing
+
+The test suite covers:
+- Basic search functionality
+- Parameter validation and handling
+- Language and region filtering
+- Safe search and time range filters
+- Complex query handling
+- Error scenarios and edge cases
+- URL validation and result formatting
+
+All tests use real Google search requests to ensure functionality works in practice.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Run `npm run lint` and `npm run test`
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Disclaimer
+
+This tool is for educational and research purposes. Please respect Google's Terms of Service and implement appropriate rate limiting in production use. The authors are not responsible for any misuse of this software.
