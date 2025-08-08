@@ -1,5 +1,26 @@
 # Enhanced Google Search MCP Server
 
+> **⚠️ EXPERIMENTAL PROJECT - USE AT YOUR OWN RISK**
+> 
+> This is an experimental Google search MCP server that uses web scraping techniques. Please be aware of the following:
+> 
+> - **Experimental Nature**: This project is for educational and research purposes only
+> - **Terms of Service**: Using this server may violate Google's Terms of Service
+> - **Rate Limiting**: Google may block or rate-limit requests from this server
+> - **Reliability**: Search results may be inconsistent due to Google's anti-scraping measures
+> 
+> **🔍 RECOMMENDED ALTERNATIVES**
+> 
+> For production use, we strongly recommend using official search APIs or established MCP servers:
+> - **DuckDuckGo MCP Servers**: More reliable and ToS-compliant alternatives
+> - **Bing Search API**: Microsoft's official search API with MCP integration
+> - **Google Custom Search API**: Google's official search API (requires API key)
+> - **SearXNG MCP**: Privacy-focused meta-search engine integration
+> 
+> Use this experimental server only if you understand the risks and limitations.
+
+---
+
 A powerful Model Context Protocol (MCP) server that provides enhanced Google search capabilities with advanced anonymization and anti-detection features.
 
 ## Features
