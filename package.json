@@ -25,6 +25,7 @@
   "description": "A boilerplate for FastMCP",
   "dependencies": {
     "axios": "^1.7.9",
+    "axios-retry": "^4.5.0",
     "cheerio": "^1.0.0-rc.12",
     "fastmcp": "^1.27.3",
     "random-useragent": "^0.5.0",

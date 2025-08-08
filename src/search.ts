@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosRetry from "axios-retry";
 import * as cheerio from "cheerio";
 import randomUseragent from "random-useragent";
 
@@ -12,6 +13,10 @@ export async function performSearch(
   query: string,
   limit: number,
 ): Promise<SearchResult[]> {
+  axiosRetry(axios, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+  });
   const userAgent = randomUseragent.getRandom();
   const response = await axios.get("https://www.google.com/search", {
     headers: {
