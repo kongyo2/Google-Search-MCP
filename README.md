@@ -222,6 +222,3 @@ All tests use real Google search requests to ensure functionality works in pract
 
 MIT License - see LICENSE file for details.
 
-## Disclaimer
-
-This tool is for educational and research purposes. Please respect Google's Terms of Service and implement appropriate rate limiting in production use. The authors are not responsible for any misuse of this software.
