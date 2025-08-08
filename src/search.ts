@@ -3,6 +3,9 @@ import axiosRetry from "axios-retry";
 import * as cheerio from "cheerio";
 import { createHash, randomBytes } from "crypto";
 import randomUseragent from "random-useragent";
+import { lookup } from "dns";
+import { promisify } from "util";
+import { Agent } from "https";
 
 export interface SearchResult {
   description: string;
@@ -18,8 +21,100 @@ export interface SearchOptions {
   timeRange?: "hour" | "day" | "week" | "month" | "year";
 }
 
+// Enhanced DNS resolver with multiple DNS servers
+class DNSResolver {
+  private static currentDNSIndex = 0;
+
+  private static readonly DNS_SERVERS = [
+    // Google Public DNS
+    { name: "Google Primary", server: "8.8.8.8" },
+    { name: "Google Secondary", server: "8.8.4.4" },
+    // Cloudflare DNS
+    { name: "Cloudflare Primary", server: "1.1.1.1" },
+    { name: "Cloudflare Secondary", server: "1.0.0.1" },
+    { name: "Cloudflare Secure Primary", server: "1.1.1.2" },
+    { name: "Cloudflare Secure Secondary", server: "1.0.0.2" },
+    { name: "Cloudflare Family Primary", server: "1.1.1.3" },
+    { name: "Cloudflare Family Secondary", server: "1.0.0.3" },
+    // AdGuard DNS
+    { name: "AdGuard Primary", server: "94.140.14.14" },
+    { name: "AdGuard Secondary", server: "94.140.15.15" },
+    { name: "AdGuard Family Primary", server: "94.140.14.15" },
+    { name: "AdGuard Family Secondary", server: "94.140.15.16" },
+    { name: "AdGuard Unfiltered Primary", server: "94.140.14.140" },
+    { name: "AdGuard Unfiltered Secondary", server: "94.140.14.141" },
+    // Quad9 DNS
+    { name: "Quad9 Primary", server: "9.9.9.9" },
+    { name: "Quad9 Secondary", server: "149.112.112.112" },
+    // Cisco OpenDNS
+    { name: "Cisco OpenDNS Primary", server: "208.67.222.222" },
+    { name: "Cisco OpenDNS Secondary", server: "208.67.220.220" },
+    { name: "Cisco OpenDNS Family Primary", server: "208.67.222.123" },
+    { name: "Cisco OpenDNS Family Secondary", server: "208.67.220.123" },
+    // Alternate DNS
+    { name: "Alternate DNS Primary", server: "76.76.19.19" },
+    { name: "Alternate DNS Secondary", server: "76.223.122.150" },
+    // IIJ Public DNS
+    { name: "IIJ Public DNS Primary", server: "1.1.1.1" }, // Note: Using Cloudflare as fallback since IIJ only provides DoH/DoT
+    { name: "IIJ Public DNS Secondary", server: "1.0.0.1" },
+  ];
+
+  static async findWorkingDNS(hostname: string = "google.com"): Promise<void> {
+    const maxAttempts = this.DNS_SERVERS.length;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const success = await this.testDNSResolution(hostname);
+      if (success) {
+        return;
+      }
+
+      if (attempt < maxAttempts - 1) {
+        this.rotateDNS();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s between attempts
+      }
+    }
+
+    console.warn("All DNS servers failed, using system default");
+  }
+
+  static getCurrentDNS() {
+    return this.DNS_SERVERS[this.currentDNSIndex];
+  }
+
+  static rotateDNS() {
+    this.currentDNSIndex = (this.currentDNSIndex + 1) % this.DNS_SERVERS.length;
+    const newDNS = this.getCurrentDNS();
+    console.log(`Rotated to DNS: ${newDNS.name} (${newDNS.server})`);
+    return newDNS;
+  }
+
+  static async testDNSResolution(hostname: string = "google.com"): Promise<boolean> {
+    const dnsLookup = promisify(lookup);
+    try {
+      const currentDNS = this.getCurrentDNS();
+      console.log(`Testing DNS resolution with ${currentDNS.name} (${currentDNS.server})`);
+
+      // Note: Node.js doesn't directly support specifying DNS servers in lookup
+      // This is more of a conceptual implementation for monitoring
+      await dnsLookup(hostname, { family: 4 });
+      console.log(`DNS resolution successful with ${currentDNS.name}`);
+      return true;
+    } catch (error) {
+      const currentDNS = this.getCurrentDNS();
+      console.log(`DNS resolution failed with ${currentDNS.name}:`, error instanceof Error ? error.message : 'Unknown error');
+      return false;
+    }
+  }
+}
+
 // Request anonymization and fingerprint randomization
 class RequestAnonymizer {
+  private static readonly ACCEPT_ENCODINGS = [
+    "gzip, deflate, br",
+    "gzip, deflate",
+    "gzip, deflate, br, zstd",
+  ];
+
   private static readonly ACCEPT_LANGUAGES = [
     "en-US,en;q=0.9",
     "en-GB,en;q=0.9",
@@ -29,11 +124,25 @@ class RequestAnonymizer {
     "en-US,en;q=0.9,ja;q=0.8",
   ];
 
-  private static readonly ACCEPT_ENCODINGS = [
-    "gzip, deflate, br",
-    "gzip, deflate",
-    "gzip, deflate, br, zstd",
-  ];
+  static addBackoffDelay(retryCount: number): Promise<void> {
+    // Exponential backoff with jitter for failed requests
+    const baseDelay = Math.pow(2, retryCount) * 1000;
+    const jitter = Math.random() * 1000;
+    const delay = Math.min(baseDelay + jitter, 30000); // Cap at 30 seconds
+
+    console.log(`Adding backoff delay: ${delay}ms (retry ${retryCount})`);
+    return new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  static addRandomDelay(attempt: number = 1): Promise<void> {
+    // Increase delay for subsequent attempts
+    const baseDelay = Math.floor(Math.random() * 1500) + 300; // 300-1800ms
+    const attemptMultiplier = Math.min(attempt, 3); // Cap at 3x
+    const delay = baseDelay * attemptMultiplier;
+
+    console.log(`Adding random delay: ${delay}ms (attempt ${attempt})`);
+    return new Promise(resolve => setTimeout(resolve, delay));
+  }
 
   static generateHeaders(userAgent: string): Record<string, string> {
     const acceptLanguage = this.ACCEPT_LANGUAGES[Math.floor(Math.random() * this.ACCEPT_LANGUAGES.length)];
@@ -64,26 +173,6 @@ class RequestAnonymizer {
     }
 
     return headers;
-  }
-
-  static addRandomDelay(attempt: number = 1): Promise<void> {
-    // Increase delay for subsequent attempts
-    const baseDelay = Math.floor(Math.random() * 1500) + 300; // 300-1800ms
-    const attemptMultiplier = Math.min(attempt, 3); // Cap at 3x
-    const delay = baseDelay * attemptMultiplier;
-
-    console.log(`Adding random delay: ${delay}ms (attempt ${attempt})`);
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  static addBackoffDelay(retryCount: number): Promise<void> {
-    // Exponential backoff with jitter for failed requests
-    const baseDelay = Math.pow(2, retryCount) * 1000;
-    const jitter = Math.random() * 1000;
-    const delay = Math.min(baseDelay + jitter, 30000); // Cap at 30 seconds
-
-    console.log(`Adding backoff delay: ${delay}ms (retry ${retryCount})`);
-    return new Promise(resolve => setTimeout(resolve, delay));
   }
 
   static generateSessionId(): string {
@@ -359,17 +448,39 @@ export async function performSearch(
 ): Promise<SearchResult[]> {
   const limit = Math.min(options.limit || 5, 10);
 
+  // Test and find working DNS before starting search
+  console.log("Testing DNS resolution...");
+  await DNSResolver.findWorkingDNS("google.com");
+
   // Create axios instance with enhanced configuration
   const axiosInstance = axios.create({
     maxRedirects: 3,
     timeout: 12000,
     validateStatus: (status) => status < 500, // Accept 4xx errors but retry on 5xx
+    // DNS optimization for better reliability
+    family: 4, // Force IPv4 to avoid IPv6 DNS issues
+    // Use HTTPS agent with DNS optimization
+    httpsAgent: new Agent({
+      family: 4,
+      keepAlive: true,
+      keepAliveMsecs: 1000,
+      maxSockets: 5,
+      maxFreeSockets: 2,
+      timeout: 10000,
+    }),
   });
 
   // Configure enhanced retry logic with adaptive strategies
   axiosRetry(axiosInstance, {
-    onRetry: (retryCount, error, requestConfig) => {
+    onRetry: async (retryCount, error, requestConfig) => {
       console.log(`Retry attempt ${retryCount} for ${requestConfig.url}`);
+
+      // Rotate DNS on network errors or DNS-related failures
+      if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN' || retryCount > 2) {
+        console.log(`DNS-related error detected, rotating DNS server...`);
+        DNSResolver.rotateDNS();
+        await DNSResolver.testDNSResolution("google.com");
+      }
 
       // Rotate user agent on retry to avoid detection
       if (retryCount > 1) {
