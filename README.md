@@ -2,6 +2,10 @@
 
 [![smithery badge](https://smithery.ai/badge/@kongyo2/google-search-mcp)](https://smithery.ai/server/@kongyo2/google-search-mcp)
 
+<a href="https://glama.ai/mcp/servers/@kongyo2/Google-Search-MCP">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kongyo2/Google-Search-MCP/badge" alt="Enhanced Google Search MCP server" />
+</a>
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/Google-Search-MCP)
 
 > **⚠️ EXPERIMENTAL PROJECT - USE AT YOUR OWN RISK**
@@ -221,4 +225,3 @@ All tests use real Google search requests to ensure functionality works in pract
 ## License
 
 MIT License - see LICENSE file for details.
-
