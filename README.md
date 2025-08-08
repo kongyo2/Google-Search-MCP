@@ -1,5 +1,7 @@
 # Enhanced Google Search MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@kongyo2/google-search-mcp)](https://smithery.ai/server/@kongyo2/google-search-mcp)
+
 > **⚠️ EXPERIMENTAL PROJECT - USE AT YOUR OWN RISK**
 > 
 > This is an experimental Google search MCP server that uses web scraping techniques. Please be aware of the following:
