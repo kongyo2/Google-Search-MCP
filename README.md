@@ -50,6 +50,15 @@ A powerful Model Context Protocol (MCP) server that provides enhanced Google sea
 
 ## Installation
 
+### Installing via Smithery
+
+To install google-search-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@kongyo2/google-search-mcp):
+
+```bash
+npx -y @smithery/cli install @kongyo2/google-search-mcp --client claude
+```
+
+### Manual Installation
 ```bash
 npm install
 ```
