@@ -6,8 +6,6 @@
 > 
 > This is an experimental Google search MCP server that uses web scraping techniques. Please be aware of the following:
 > 
-> - **Experimental Nature**: This project is for educational and research purposes only
-> - **Terms of Service**: Using this server may violate Google's Terms of Service
 > - **Rate Limiting**: Google may block or rate-limit requests from this server
 > - **Reliability**: Search results may be inconsistent due to Google's anti-scraping measures
 > 
