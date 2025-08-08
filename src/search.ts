@@ -14,7 +14,7 @@ export async function performSearch(
   limit: number,
 ): Promise<SearchResult[]> {
   axiosRetry(axios, {
-    retries: 3,
+    retries: 100,
     retryDelay: axiosRetry.exponentialDelay,
   });
   const userAgent = randomUseragent.getRandom();
